@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginInput } from '@erp/shared';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ import { useLogin } from '@/features/auth/useLogin';
 
 export function LoginPage() {
   const login = useLogin();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -24,7 +26,10 @@ export function LoginPage() {
     defaultValues: { email: '', password: '' },
   });
 
-  const onSubmit = (values: LoginInput) => login.mutate(values);
+  const onSubmit = (values: LoginInput) =>
+    login.mutate(values, {
+      onSuccess: () => navigate('/', { replace: true }),
+    });
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
