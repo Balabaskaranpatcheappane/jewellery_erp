@@ -1,5 +1,4 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 
@@ -8,7 +7,8 @@ async function bootstrap() {
   const config = app.get(ConfigService);
 
   app.setGlobalPrefix('api');
-  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
+  // Validation is handled per-route with ZodValidationPipe (see common/), so we
+  // deliberately don't register Nest's class-validator ValidationPipe here.
   app.enableCors({
     origin: config.get<string>('API_CORS_ORIGIN', 'http://localhost:5173'),
     credentials: true,
