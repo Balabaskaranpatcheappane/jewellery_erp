@@ -10,7 +10,10 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { email },
-    update: {},
+    // Authoritative reseed: always reset the admin's password/role/active flag so
+    // `pnpm db:seed` reliably restores known-good credentials even if the row
+    // already exists with a stale hash.
+    update: { passwordHash, role: UserRole.ADMIN, isActive: true },
     create: {
       email,
       name: 'Administrator',
