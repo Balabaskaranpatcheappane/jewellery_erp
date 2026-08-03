@@ -1,0 +1,27 @@
+{
+  "name": "jewelry-erp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Enterprise Jewelry ERP — Electron + NestJS + Prisma monorepo",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm --filter @erp/shared build && pnpm --filter @erp/api build && pnpm --filter @erp/desktop build",
+    "typecheck": "pnpm --filter @erp/shared build && pnpm -r --parallel typecheck",
+    "dev:api": "pnpm --filter @erp/api start:dev",
+    "dev:desktop": "pnpm --filter @erp/desktop dev",
+    "db:generate": "pnpm --filter @erp/api prisma:generate",
+    "db:migrate": "pnpm --filter @erp/api prisma:migrate",
+    "db:seed": "pnpm --filter @erp/api prisma:seed"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "prisma",
+      "@prisma/client",
+      "@prisma/engines"
+    ]
+  }
+}

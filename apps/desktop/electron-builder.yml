@@ -1,0 +1,15 @@
+appId: com.jewelry.erp
+productName: Jewelry ERP
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - dist-electron/**/*
+win:
+  target:
+    - nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true

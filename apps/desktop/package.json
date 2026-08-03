@@ -1,0 +1,49 @@
+{
+  "name": "@erp/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Jewelry ERP desktop client — Electron + React",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && cross-env ELECTRON_RENDERER_URL=http://localhost:5173 electron .\"",
+    "build:renderer": "vite build",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build": "pnpm build:renderer && pnpm build:main",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.main.json",
+    "package": "pnpm build && electron-builder"
+  },
+  "dependencies": {
+    "@erp/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@hookform/resolvers": "^3.9.1",
+    "@radix-ui/react-label": "^2.1.1",
+    "@radix-ui/react-slot": "^1.1.1",
+    "@tanstack/react-query": "^5.62.0",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "lucide-react": "^0.469.0",
+    "postcss": "^8.4.49",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.54.0",
+    "react-router-dom": "^7.1.0",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss": "^3.4.17",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.3",
+    "wait-on": "^8.0.1",
+    "zod": "^3.23.8",
+    "zustand": "^5.0.2"
+  }
+}
