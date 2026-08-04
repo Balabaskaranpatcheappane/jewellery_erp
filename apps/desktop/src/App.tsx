@@ -17,6 +17,9 @@ import { CustomersPage } from '@/pages/CustomersPage';
 import { InvoicesPage } from '@/pages/InvoicesPage';
 import { NewInvoicePage } from '@/pages/NewInvoicePage';
 import { InvoiceDetailPage } from '@/pages/InvoiceDetailPage';
+import { JobWorkPage } from '@/pages/JobWorkPage';
+import { SchemesPage } from '@/pages/SchemesPage';
+import { BranchesPage } from '@/pages/BranchesPage';
 
 function RequireAuth() {
   const token = useAuthStore((s) => s.token);
@@ -39,6 +42,9 @@ const router = createHashRouter([
           { path: '/billing', element: <InvoicesPage /> },
           { path: '/billing/new', element: <NewInvoicePage /> },
           { path: '/billing/invoices/:id', element: <InvoiceDetailPage /> },
+          { path: '/job-work', element: <JobWorkPage /> },
+          { path: '/schemes', element: <SchemesPage /> },
+          { path: '/branches', element: <BranchesPage /> },
         ],
       },
     ],

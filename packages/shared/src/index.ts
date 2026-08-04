@@ -59,3 +59,32 @@ export type {
   Invoice,
   InvoiceSummary,
 } from './billing';
+
+export {
+  JobStatus,
+  SchemeStatus,
+  createKarigarSchema,
+  karigarSchema,
+  createJobOrderSchema,
+  receiveJobOrderSchema,
+  jobOrderSchema,
+  createSchemeSchema,
+  addInstallmentSchema,
+  schemeInstallmentSchema,
+  schemeSchema,
+  createBranchSchema,
+  branchSchema,
+} from './operations';
+export type {
+  CreateKarigarInput,
+  Karigar,
+  CreateJobOrderInput,
+  ReceiveJobOrderInput,
+  JobOrder,
+  CreateSchemeInput,
+  AddInstallmentInput,
+  SchemeInstallment,
+  Scheme,
+  CreateBranchInput,
+  Branch,
+} from './operations';

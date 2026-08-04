@@ -43,6 +43,18 @@ enum InvoiceStatus {
   CANCELLED
 }
 
+enum JobStatus {
+  ISSUED
+  RECEIVED
+  CANCELLED
+}
+
+enum SchemeStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
 model User {
   id           String       @id @default(cuid())
   email        String       @unique
@@ -89,6 +101,7 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   invoices  Invoice[]
+  schemes   SavingScheme[]
 
   @@index([name])
   @@map("customers")
@@ -209,4 +222,85 @@ model OldGoldLine {
 
   @@index([invoiceId])
   @@map("old_gold_lines")
+}
+
+/// A goldsmith / artisan (karigar) who receives metal to make jewelry.
+model Karigar {
+  id             String     @id @default(cuid())
+  name           String
+  phone          String?
+  specialization String?
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  jobs           JobOrder[]
+
+  @@map("karigars")
+}
+
+/// Metal issued to a karigar for a job, and what came back (received weight,
+/// wastage, making paid).
+model JobOrder {
+  id                 String    @id @default(cuid())
+  jobNo              String    @unique
+  karigar            Karigar   @relation(fields: [karigarId], references: [id])
+  karigarId          String
+  description        String
+  metal              MetalType
+  purity             String
+  issuedWeightGram   Decimal   @db.Decimal(12, 3)
+  expectedReturnDate DateTime? @db.Date
+  status             JobStatus @default(ISSUED)
+  receivedWeightGram Decimal?  @db.Decimal(12, 3)
+  wastageGram        Decimal?  @db.Decimal(12, 3)
+  makingAmount       Decimal?  @db.Decimal(14, 2)
+  notes              String?
+  issuedAt           DateTime  @default(now())
+  receivedAt         DateTime?
+
+  @@index([karigarId])
+  @@index([status])
+  @@map("job_orders")
+}
+
+/// A monthly savings / chit scheme a customer enrolls in.
+model SavingScheme {
+  id             String              @id @default(cuid())
+  customer       Customer            @relation(fields: [customerId], references: [id])
+  customerId     String
+  name           String
+  monthlyAmount  Decimal             @db.Decimal(14, 2)
+  durationMonths Int
+  startDate      DateTime            @db.Date
+  status         SchemeStatus        @default(ACTIVE)
+  createdAt      DateTime            @default(now())
+  installments   SchemeInstallment[]
+
+  @@index([customerId])
+  @@map("saving_schemes")
+}
+
+model SchemeInstallment {
+  id       String       @id @default(cuid())
+  scheme   SavingScheme @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+  schemeId String
+  monthNo  Int
+  amount   Decimal      @db.Decimal(14, 2)
+  paidOn   DateTime     @db.Date
+
+  @@index([schemeId])
+  @@map("scheme_installments")
+}
+
+/// A shop location for multi-branch operations.
+model Branch {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  address   String?
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("branches")
 }

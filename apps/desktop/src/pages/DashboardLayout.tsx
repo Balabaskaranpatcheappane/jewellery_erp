@@ -8,6 +8,9 @@ import {
   Tags,
   Users,
   Receipt,
+  Hammer,
+  PiggyBank,
+  Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -20,6 +23,9 @@ const nav = [
   { to: '/inventory/categories', label: 'Categories', icon: Tags, end: false },
   { to: '/customers', label: 'Customers', icon: Users, end: false },
   { to: '/billing', label: 'Billing', icon: Receipt, end: false },
+  { to: '/job-work', label: 'Job Work', icon: Hammer, end: false },
+  { to: '/schemes', label: 'Schemes', icon: PiggyBank, end: false },
+  { to: '/branches', label: 'Branches', icon: Building2, end: false },
 ];
 
 export function DashboardLayout() {
