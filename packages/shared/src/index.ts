@@ -94,3 +94,6 @@ export type { BackupFile, RestoreBackupInput } from './admin';
 
 export { createUserSchema, setUserActiveSchema, userSchema } from './user';
 export type { CreateUserInput, SetUserActiveInput, UserRecord } from './user';
+
+export { updateShopProfileSchema, shopProfileSchema } from './shop';
+export type { UpdateShopProfileInput, ShopProfile } from './shop';

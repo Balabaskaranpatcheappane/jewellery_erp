@@ -292,6 +292,18 @@ model SchemeInstallment {
   @@map("scheme_installments")
 }
 
+/// Singleton shop profile (name, address, GSTIN) printed on invoices.
+model ShopProfile {
+  id        String   @id @default("default")
+  name      String   @default("Jewelry ERP")
+  address   String?
+  phone     String?
+  gstin     String?
+  updatedAt DateTime @updatedAt
+
+  @@map("shop_profile")
+}
+
 /// A shop location for multi-branch operations.
 model Branch {
   id        String   @id @default(cuid())

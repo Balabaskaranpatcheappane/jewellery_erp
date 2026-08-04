@@ -1,9 +1,105 @@
 import { useState } from 'react';
-import { DatabaseBackup, RotateCcw } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { updateShopProfileSchema, type UpdateShopProfileInput } from '@erp/shared';
+import { DatabaseBackup, RotateCcw, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
 import { useBackups, useCreateBackup, useRestoreBackup } from '@/features/admin/api';
+import { useShop, useUpdateShop } from '@/features/shop/api';
+
+function ShopProfileCard({ isAdmin }: { isAdmin: boolean }) {
+  const shop = useShop();
+  const updateShop = useUpdateShop();
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Store className="size-4" /> Shop profile
+        </CardTitle>
+        <CardDescription>
+          Printed on the header of every invoice PDF.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {shop.isLoading || !shop.data ? (
+          <p className="text-sm text-muted-foreground">Loading…</p>
+        ) : (
+          <ShopProfileForm
+            isAdmin={isAdmin}
+            initial={{
+              name: shop.data.name,
+              address: shop.data.address ?? '',
+              phone: shop.data.phone ?? '',
+              gstin: shop.data.gstin ?? '',
+            }}
+            pending={updateShop.isPending}
+            error={updateShop.isError ? (updateShop.error as Error).message : null}
+            saved={updateShop.isSuccess}
+            onSave={(v) => updateShop.mutate(v)}
+          />
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ShopProfileForm({
+  isAdmin,
+  initial,
+  pending,
+  error,
+  saved,
+  onSave,
+}: {
+  isAdmin: boolean;
+  initial: UpdateShopProfileInput;
+  pending: boolean;
+  error: string | null;
+  saved: boolean;
+  onSave: (v: UpdateShopProfileInput) => void;
+}) {
+  const { register, handleSubmit, formState } = useForm<UpdateShopProfileInput>({
+    resolver: zodResolver(updateShopProfileSchema),
+    defaultValues: initial,
+  });
+  return (
+    <form onSubmit={handleSubmit(onSave)} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="space-y-2">
+        <Label htmlFor="shopName">Shop name</Label>
+        <Input id="shopName" disabled={!isAdmin} {...register('name')} />
+        {formState.errors.name && (
+          <p className="text-xs text-destructive">{formState.errors.name.message}</p>
+        )}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="shopPhone">Phone</Label>
+        <Input id="shopPhone" disabled={!isAdmin} {...register('phone')} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="shopGstin">GSTIN</Label>
+        <Input id="shopGstin" disabled={!isAdmin} {...register('gstin')} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="shopAddress">Address</Label>
+        <Input id="shopAddress" disabled={!isAdmin} {...register('address')} />
+      </div>
+      <div className="flex items-center gap-3 sm:col-span-2">
+        <Button type="submit" disabled={!isAdmin || pending}>
+          {pending ? 'Saving…' : 'Save shop profile'}
+        </Button>
+        {saved && <span className="text-sm text-emerald-500">Saved</span>}
+        {error && <span className="text-sm text-destructive">{error}</span>}
+        {!isAdmin && (
+          <span className="text-sm text-muted-foreground">Admins only</span>
+        )}
+      </div>
+    </form>
+  );
+}
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -26,9 +122,11 @@ export function SettingsPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">
-          Database backup and restore for your local PostgreSQL instance.
+          Shop profile and database backup / restore.
         </p>
       </div>
+
+      <ShopProfileCard isAdmin={isAdmin} />
 
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">

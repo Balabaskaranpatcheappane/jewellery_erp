@@ -2,6 +2,7 @@ import { Controller, Get, Param, Res, UseGuards } from '@nestjs/common';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { BillingService } from '../billing/billing.service';
+import { ShopService } from '../shop/shop.service';
 import { ReportsService } from './reports.service';
 import { renderInvoicePdf } from './invoice-pdf';
 
@@ -11,6 +12,7 @@ export class ReportsController {
   constructor(
     private readonly reports: ReportsService,
     private readonly billing: BillingService,
+    private readonly shop: ShopService,
   ) {}
 
   @Get('invoices/:id/pdf')
@@ -18,8 +20,11 @@ export class ReportsController {
     @Param('id') id: string,
     @Res() res: Response,
   ): Promise<void> {
-    const invoice = await this.billing.get(id);
-    const pdf = await renderInvoicePdf(invoice);
+    const [invoice, shop] = await Promise.all([
+      this.billing.get(id),
+      this.shop.get(),
+    ]);
+    const pdf = await renderInvoicePdf(invoice, shop);
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename="${invoice.invoiceNo}.pdf"`,
