@@ -110,10 +110,10 @@ export function renderInvoicePdf(
 
     // ---------- Totals block (right aligned) ----------
     y += 10;
-    const labelX = 350;
+    const labelX = 330;
     const labelW = 120;
-    const valX = 475;
-    const valW = 80;
+    const valX = 455;
+    const valW = 100;
     const totalRow = (label: string, value: string, bold = false) => {
       text(label, labelX, y, labelW, 'right', { bold });
       text(value, valX, y, valW, 'right', { bold });
@@ -126,9 +126,9 @@ export function renderInvoicePdf(
     if (invoice.roundOff !== 0) totalRow('Round off', money(invoice.roundOff));
     doc.moveTo(labelX, y).lineTo(RIGHT, y).lineWidth(1).strokeColor('#999999').stroke();
     y += 6;
-    text('Grand Total', labelX, y, labelW, 'right', { size: 12, bold: true });
-    text(`Rs. ${money(invoice.grandTotal)}`, valX, y, valW, 'right', { size: 12, bold: true });
-    y += 28;
+    text('Grand Total', labelX, y, labelW, 'right', { size: 10, bold: true });
+    text(`Rs. ${money(invoice.grandTotal)}`, valX, y, valW, 'right', { size: 10, bold: true });
+    y += 24;
 
     if (invoice.notes) {
       text(`Notes: ${invoice.notes}`, LEFT, y, RIGHT - LEFT, 'left', { size: 9, color: '#666' });

@@ -132,25 +132,40 @@ export function CustomersPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-left text-muted-foreground">
-                    <th className="py-2 pr-4 font-medium">Name</th>
+                    <th className="py-2 pr-4 font-medium">Customer</th>
                     <th className="py-2 pr-4 font-medium">Phone</th>
                     <th className="py-2 pr-4 font-medium">City</th>
-                    <th className="py-2 pr-4 font-medium">GSTIN</th>
+                    <th className="py-2 pr-4 font-medium">Email</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {customers.data.map((c) => (
-                    <tr key={c.id} className="border-b last:border-0">
-                      <td className="py-2 pr-4 font-medium">{c.name}</td>
-                      <td className="py-2 pr-4 tabular-nums">{c.phone}</td>
-                      <td className="py-2 pr-4 text-muted-foreground">
-                        {c.city ?? '—'}
-                      </td>
-                      <td className="py-2 pr-4 text-muted-foreground">
-                        {c.gstin ?? '—'}
-                      </td>
-                    </tr>
-                  ))}
+                  {customers.data.map((c) => {
+                    const details = [
+                      c.address && `📍 ${c.address}`,
+                      c.gstin && `GSTIN: ${c.gstin}`,
+                      c.pan && `PAN: ${c.pan}`,
+                      c.aadhaar && `Aadhaar: ${c.aadhaar}`,
+                    ].filter(Boolean) as string[];
+                    return (
+                      <tr key={c.id} className="border-b align-top last:border-0">
+                        <td className="py-2 pr-4">
+                          <div className="font-medium">{c.name}</div>
+                          {details.length > 0 && (
+                            <div className="mt-0.5 text-xs text-muted-foreground">
+                              {details.join('  ·  ')}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-2 pr-4 tabular-nums">{c.phone}</td>
+                        <td className="py-2 pr-4 text-muted-foreground">
+                          {c.city ?? '—'}
+                        </td>
+                        <td className="py-2 pr-4 text-muted-foreground">
+                          {c.email ?? '—'}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
