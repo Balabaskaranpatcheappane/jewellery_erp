@@ -20,6 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
+import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 
 interface NavItem {
   to: string;
@@ -54,6 +55,12 @@ export function DashboardLayout() {
     clear();
     navigate('/login');
   };
+
+  // Auto sign-out after 40 minutes of inactivity.
+  useIdleTimeout(40 * 60 * 1000, () => {
+    clear();
+    navigate('/login', { replace: true });
+  });
 
   return (
     <div className="flex min-h-screen bg-background">
