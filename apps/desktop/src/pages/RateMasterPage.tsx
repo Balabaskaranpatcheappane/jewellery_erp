@@ -33,7 +33,9 @@ export function RateMasterPage() {
       metal: MetalType.GOLD,
       purity: '916',
       ratePerGram: 0,
-      effectiveDate: new Date(today),
+      // A yyyy-mm-dd string so the native date input displays it; the schema
+      // coerces it to a Date on submit.
+      effectiveDate: today as unknown as Date,
     },
   });
 
@@ -101,6 +103,11 @@ export function RateMasterPage() {
                 type="date"
                 {...register('effectiveDate')}
               />
+              {errors.effectiveDate && (
+                <p className="text-xs text-destructive">
+                  {errors.effectiveDate.message}
+                </p>
+              )}
             </div>
             <div className="flex items-end">
               <Button
