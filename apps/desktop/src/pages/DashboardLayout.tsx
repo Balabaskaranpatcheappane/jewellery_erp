@@ -1,5 +1,12 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Gem, LayoutDashboard, LineChart, LogOut } from 'lucide-react';
+import {
+  Gem,
+  LayoutDashboard,
+  LineChart,
+  LogOut,
+  Package,
+  Tags,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
@@ -7,6 +14,8 @@ import { useAuthStore } from '@/store/auth';
 const nav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/rate-master', label: 'Rate Master', icon: LineChart, end: false },
+  { to: '/inventory', label: 'Inventory', icon: Package, end: true },
+  { to: '/inventory/categories', label: 'Categories', icon: Tags, end: false },
 ];
 
 export function DashboardLayout() {

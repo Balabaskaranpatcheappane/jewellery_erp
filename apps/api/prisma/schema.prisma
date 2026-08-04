@@ -24,6 +24,18 @@ enum MetalType {
   PLATINUM
 }
 
+enum MakingChargeType {
+  PER_GRAM
+  FIXED
+  PERCENT
+}
+
+enum ItemStatus {
+  IN_STOCK
+  RESERVED
+  SOLD
+}
+
 model User {
   id           String       @id @default(cuid())
   email        String       @unique
@@ -54,4 +66,49 @@ model MetalRate {
   @@unique([metal, purity, effectiveDate])
   @@index([metal, purity, effectiveDate])
   @@map("metal_rates")
+}
+
+/// Product grouping (Rings, Chains, Bangles, …) carrying GST HSN code and
+/// default making-charge / wastage settings that new items inherit.
+model ProductCategory {
+  id                    String           @id @default(cuid())
+  name                  String
+  code                  String           @unique
+  hsnCode               String?
+  defaultMakingType     MakingChargeType @default(PER_GRAM)
+  defaultMakingRate     Decimal          @default(0) @db.Decimal(12, 3)
+  defaultWastagePercent Decimal          @default(0) @db.Decimal(6, 3)
+  createdAt             DateTime         @default(now())
+  updatedAt            DateTime          @updatedAt
+  items                 Item[]
+
+  @@map("product_categories")
+}
+
+/// A physical stock item / piece. Weights are in grams; net weight is gross
+/// minus stone weight and is stored so billing never has to recompute it.
+model Item {
+  id              String           @id @default(cuid())
+  sku             String           @unique
+  name            String
+  category        ProductCategory  @relation(fields: [categoryId], references: [id])
+  categoryId      String
+  metal           MetalType
+  purity          String
+  grossWeightGram Decimal          @db.Decimal(12, 3)
+  stoneWeightGram Decimal          @default(0) @db.Decimal(12, 3)
+  netWeightGram   Decimal          @db.Decimal(12, 3)
+  makingType      MakingChargeType
+  makingRate      Decimal          @db.Decimal(12, 3)
+  wastagePercent  Decimal          @default(0) @db.Decimal(6, 3)
+  huid            String?
+  quantity        Int              @default(1)
+  status          ItemStatus       @default(IN_STOCK)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([metal, purity])
+  @@map("items")
 }

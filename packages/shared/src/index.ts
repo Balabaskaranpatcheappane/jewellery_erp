@@ -15,3 +15,18 @@ export {
   metalRateSchema,
 } from './rate';
 export type { CreateMetalRateInput, MetalRate } from './rate';
+
+export {
+  MakingChargeType,
+  ItemStatus,
+  createCategorySchema,
+  categorySchema,
+  createItemSchema,
+  itemSchema,
+} from './inventory';
+export type {
+  CreateCategoryInput,
+  Category,
+  CreateItemInput,
+  Item,
+} from './inventory';

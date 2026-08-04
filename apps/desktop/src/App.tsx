@@ -11,6 +11,8 @@ import { LoginPage } from '@/pages/LoginPage';
 import { DashboardLayout } from '@/pages/DashboardLayout';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { RateMasterPage } from '@/pages/RateMasterPage';
+import { ItemsPage } from '@/pages/ItemsPage';
+import { CategoriesPage } from '@/pages/CategoriesPage';
 
 function RequireAuth() {
   const token = useAuthStore((s) => s.token);
@@ -27,6 +29,8 @@ const router = createHashRouter([
         children: [
           { path: '/', element: <DashboardPage /> },
           { path: '/rate-master', element: <RateMasterPage /> },
+          { path: '/inventory', element: <ItemsPage /> },
+          { path: '/inventory/categories', element: <CategoriesPage /> },
         ],
       },
     ],
