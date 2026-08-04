@@ -88,3 +88,6 @@ export type {
   CreateBranchInput,
   Branch,
 } from './operations';
+
+export { backupFileSchema, restoreBackupSchema } from './admin';
+export type { BackupFile, RestoreBackupInput } from './admin';

@@ -13,7 +13,8 @@
     "dev:desktop": "pnpm --filter @erp/shared build && pnpm --filter @erp/desktop dev",
     "db:generate": "pnpm --filter @erp/api prisma:generate",
     "db:migrate": "pnpm --filter @erp/api prisma:migrate",
-    "db:seed": "pnpm --filter @erp/api prisma:seed"
+    "db:seed": "pnpm --filter @erp/api prisma:seed",
+    "package:desktop": "pnpm --filter @erp/shared build && pnpm --filter @erp/desktop package"
   },
   "packageManager": "pnpm@10.33.0",
   "pnpm": {

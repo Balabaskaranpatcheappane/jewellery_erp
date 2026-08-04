@@ -13,6 +13,10 @@ out/
 # Prisma
 apps/api/prisma/*.db
 
+# Database backups
+backups/
+*.dump
+
 # Env
 .env
 .env.local

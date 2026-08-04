@@ -11,6 +11,7 @@ import {
   Hammer,
   PiggyBank,
   Building2,
+  Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ const nav = [
   { to: '/job-work', label: 'Job Work', icon: Hammer, end: false },
   { to: '/schemes', label: 'Schemes', icon: PiggyBank, end: false },
   { to: '/branches', label: 'Branches', icon: Building2, end: false },
+  { to: '/settings', label: 'Settings', icon: Settings, end: false },
 ];
 
 export function DashboardLayout() {
