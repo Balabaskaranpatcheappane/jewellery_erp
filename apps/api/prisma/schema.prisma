@@ -370,6 +370,18 @@ model LoanRepayment {
   @@map("loan_repayments")
 }
 
+/// Singleton product-license activation record.
+model License {
+  id          String    @id @default("default")
+  key         String
+  licensee    String?
+  edition     String?
+  activatedAt DateTime  @default(now())
+  expiresAt   DateTime?
+
+  @@map("license")
+}
+
 /// Singleton shop profile (name, address, GSTIN) printed on invoices.
 model ShopProfile {
   id        String   @id @default("default")

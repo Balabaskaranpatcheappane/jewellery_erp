@@ -101,6 +101,9 @@ export type { UpdateShopProfileInput, ShopProfile } from './shop';
 export { SalesPeriod, salesReportRowSchema, salesReportSchema } from './report';
 export type { SalesReportRow, SalesReport } from './report';
 
+export { activateLicenseSchema, licenseStatusSchema } from './license';
+export type { ActivateLicenseInput, LicenseStatus } from './license';
+
 export {
   LoanStatus,
   pledgeItemInputSchema,
