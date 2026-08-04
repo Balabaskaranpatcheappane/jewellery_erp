@@ -150,6 +150,7 @@ export function RateMasterPage() {
                       Rate / g (₹)
                     </th>
                     <th className="py-2 pr-4 font-medium">By</th>
+                    <th className="py-2 pr-4 font-medium">Logged on</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -165,6 +166,9 @@ export function RateMasterPage() {
                       </td>
                       <td className="py-2 pr-4 text-muted-foreground">
                         {r.createdByName ?? '—'}
+                      </td>
+                      <td className="py-2 pr-4 text-muted-foreground">
+                        {new Date(r.createdAt).toLocaleString('en-IN')}
                       </td>
                     </tr>
                   ))}

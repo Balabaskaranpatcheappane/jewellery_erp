@@ -41,8 +41,12 @@ export class RateMasterService {
     input: CreateMetalRateInput,
     userId: string,
   ): Promise<MetalRate> {
-    const effectiveDate = new Date(input.effectiveDate);
-    effectiveDate.setHours(0, 0, 0, 0);
+    // Normalize to UTC midnight of the picked calendar date. Using local
+    // setHours() here shifted the stored @db.Date by a day on non-UTC servers.
+    const d = new Date(input.effectiveDate);
+    const effectiveDate = new Date(
+      Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()),
+    );
 
     const row = await this.prisma.metalRate.upsert({
       where: {

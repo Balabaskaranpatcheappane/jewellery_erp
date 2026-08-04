@@ -103,6 +103,8 @@ model Customer {
   phone     String   @unique
   email     String?
   gstin     String?
+  pan       String?
+  aadhaar   String?
   address   String?
   city      String?
   createdAt DateTime @default(now())

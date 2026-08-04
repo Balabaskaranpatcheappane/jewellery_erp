@@ -25,6 +25,8 @@ export function CustomersPage() {
       phone: '',
       email: '',
       gstin: '',
+      pan: '',
+      aadhaar: '',
       address: '',
       city: '',
     },
@@ -75,6 +77,20 @@ export function CustomersPage() {
             <div className="space-y-2">
               <Label htmlFor="gstin">GSTIN</Label>
               <Input id="gstin" placeholder="optional" {...register('gstin')} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pan">PAN</Label>
+              <Input id="pan" placeholder="ABCDE1234F (optional)" {...register('pan')} />
+              {errors.pan && (
+                <p className="text-xs text-destructive">{errors.pan.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="aadhaar">Aadhaar</Label>
+              <Input id="aadhaar" placeholder="12 digits (optional)" {...register('aadhaar')} />
+              {errors.aadhaar && (
+                <p className="text-xs text-destructive">{errors.aadhaar.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
