@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm, useFieldArray, useWatch, type Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -97,6 +98,22 @@ export function NewInvoicePage() {
 
   const inStock = (items.data ?? []).filter((i) => i.status === 'IN_STOCK');
 
+  const [scan, setScan] = useState('');
+  const [scanMsg, setScanMsg] = useState<string | null>(null);
+
+  const scanAdd = (raw: string) => {
+    const sku = raw.trim();
+    if (!sku) return;
+    const item = inStock.find((i) => i.sku.toLowerCase() === sku.toLowerCase());
+    if (item) {
+      addFromItem(item);
+      setScanMsg(null);
+    } else {
+      setScanMsg(`No in-stock item with SKU "${sku}"`);
+    }
+    setScan('');
+  };
+
   const addBlankLine = () =>
     lines.append({
       itemId: null,
@@ -182,6 +199,18 @@ export function NewInvoicePage() {
             <CardHeader className="flex-row items-center justify-between space-y-0">
               <CardTitle className="text-base">Line items</CardTitle>
               <div className="flex items-center gap-2">
+                <Input
+                  className="h-9 w-44"
+                  placeholder="Scan barcode (SKU)…"
+                  value={scan}
+                  onChange={(e) => setScan(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      scanAdd(scan);
+                    }
+                  }}
+                />
                 <select
                   className={`${selectClass} max-w-52`}
                   value=""
@@ -203,9 +232,12 @@ export function NewInvoicePage() {
               </div>
             </CardHeader>
             <CardContent>
+              {scanMsg && (
+                <p className="mb-3 text-sm text-destructive">{scanMsg}</p>
+              )}
               {lines.fields.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Add a line from stock or a blank line to begin.
+                  Scan a barcode, add from stock, or add a blank line to begin.
                 </p>
               ) : (
                 <div className="overflow-x-auto">

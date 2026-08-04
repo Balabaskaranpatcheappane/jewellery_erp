@@ -6,12 +6,12 @@ import {
   MetalType,
   type CreateItemInput,
 } from '@erp/shared';
-import { Download, Trash2 } from 'lucide-react';
+import { Barcode, Download, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { saveReport } from '@/lib/download';
+import { openReport, saveReport } from '@/lib/download';
 import {
   useCategories,
   useCreateItem,
@@ -291,6 +291,14 @@ export function ItemsPage() {
                         {it.status}
                       </td>
                       <td className="py-2 text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Barcode label"
+                          onClick={() => void openReport(`/reports/items/${it.id}/barcode.png`)}
+                        >
+                          <Barcode className="size-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
