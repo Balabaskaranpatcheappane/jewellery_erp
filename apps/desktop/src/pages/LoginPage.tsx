@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginInput } from '@erp/shared';
+import { Fingerprint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,13 +15,19 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useLogin } from '@/features/auth/useLogin';
+import { useAuthStore } from '@/store/auth';
+import { fingerprintSupported, loginWithFingerprint } from '@/features/auth/webauthn';
 
 export function LoginPage() {
   const login = useLogin();
   const navigate = useNavigate();
+  const setSession = useAuthStore((s) => s.setSession);
+  const [fpBusy, setFpBusy] = useState(false);
+  const [fpError, setFpError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -30,6 +38,25 @@ export function LoginPage() {
     login.mutate(values, {
       onSuccess: () => navigate('/', { replace: true }),
     });
+
+  const onFingerprint = async () => {
+    const email = watch('email').trim();
+    if (!email) {
+      setFpError('Enter your email first, then use fingerprint');
+      return;
+    }
+    setFpBusy(true);
+    setFpError(null);
+    try {
+      const res = await loginWithFingerprint(email);
+      setSession(res.accessToken, res.user);
+      navigate('/', { replace: true });
+    } catch (e) {
+      setFpError((e as Error).message || 'Fingerprint login failed');
+    } finally {
+      setFpBusy(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -76,6 +103,33 @@ export function LoginPage() {
               {login.isPending ? 'Signing in…' : 'Sign in'}
             </Button>
           </form>
+
+          {fingerprintSupported() && (
+            <div className="mt-4 space-y-2">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">or</span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={fpBusy}
+                onClick={() => void onFingerprint()}
+              >
+                <Fingerprint className="size-4" />
+                {fpBusy ? 'Waiting for fingerprint…' : 'Login with fingerprint'}
+              </Button>
+              {fpError && <p className="text-xs text-destructive">{fpError}</p>}
+              <p className="text-center text-xs text-muted-foreground">
+                Enrol first in Settings → Security while signed in.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

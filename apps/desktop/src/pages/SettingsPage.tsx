@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateShopProfileSchema, type UpdateShopProfileInput } from '@erp/shared';
-import { DatabaseBackup, RotateCcw, Store } from 'lucide-react';
+import { DatabaseBackup, RotateCcw, Store, Fingerprint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,57 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuthStore } from '@/store/auth';
 import { useBackups, useCreateBackup, useRestoreBackup } from '@/features/admin/api';
 import { useShop, useUpdateShop } from '@/features/shop/api';
+import { enrollFingerprint, fingerprintSupported } from '@/features/auth/webauthn';
+
+function SecurityCard() {
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const supported = fingerprintSupported();
+
+  const enroll = async () => {
+    setBusy(true);
+    setMsg(null);
+    try {
+      await enrollFingerprint();
+      setMsg({ ok: true, text: 'Fingerprint enrolled on this device. You can now use it to log in.' });
+    } catch (e) {
+      setMsg({ ok: false, text: (e as Error).message || 'Enrolment failed' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Fingerprint className="size-4" /> Security — Fingerprint login
+        </CardTitle>
+        <CardDescription>
+          Enrol this device&apos;s fingerprint / Windows Hello so you can sign in
+          without typing your password.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {!supported ? (
+          <p className="text-sm text-muted-foreground">
+            This device / build does not support WebAuthn biometrics.
+          </p>
+        ) : (
+          <Button onClick={() => void enroll()} disabled={busy}>
+            <Fingerprint className="size-4" />
+            {busy ? 'Follow the prompt…' : 'Enable fingerprint on this device'}
+          </Button>
+        )}
+        {msg && (
+          <p className={`text-sm ${msg.ok ? 'text-emerald-500' : 'text-destructive'}`}>
+            {msg.text}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 function ShopProfileCard({ isAdmin }: { isAdmin: boolean }) {
   const shop = useShop();
@@ -127,6 +178,8 @@ export function SettingsPage() {
       </div>
 
       <ShopProfileCard isAdmin={isAdmin} />
+
+      <SecurityCard />
 
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">

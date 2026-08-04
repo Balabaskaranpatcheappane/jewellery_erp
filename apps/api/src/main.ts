@@ -10,7 +10,14 @@ async function bootstrap() {
   // Validation is handled per-route with ZodValidationPipe (see common/), so we
   // deliberately don't register Nest's class-validator ValidationPipe here.
   app.enableCors({
-    origin: config.get<string>('API_CORS_ORIGIN', 'http://localhost:5173'),
+    origin: config
+      .get<string>(
+        'API_CORS_ORIGIN',
+        'http://localhost:5173,http://localhost:4180',
+      )
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean),
     credentials: true,
   });
 

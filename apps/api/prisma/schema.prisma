@@ -73,8 +73,25 @@ model User {
   metalRates   MetalRate[]
   invoices     Invoice[]
   loans        Loan[]
+  webauthnCredentials WebAuthnCredential[]
 
   @@map("users")
+}
+
+/// A registered WebAuthn / Windows Hello (fingerprint) credential for a user.
+model WebAuthnCredential {
+  id           String   @id @default(cuid())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  credentialId String   @unique
+  publicKey    Bytes
+  counter      Int      @default(0)
+  transports   String?
+  label        String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@map("webauthn_credentials")
 }
 
 /// Daily precious-metal rates. The active rate for a given metal+purity is the

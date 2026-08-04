@@ -13,7 +13,8 @@
     "package": "pnpm build && electron-builder"
   },
   "dependencies": {
-    "@erp/shared": "workspace:*"
+    "@erp/shared": "workspace:*",
+    "@simplewebauthn/browser": "^13.3.0"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.9.1",
