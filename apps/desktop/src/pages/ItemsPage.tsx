@@ -6,11 +6,12 @@ import {
   MetalType,
   type CreateItemInput,
 } from '@erp/shared';
-import { Trash2 } from 'lucide-react';
+import { Download, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { saveReport } from '@/lib/download';
 import {
   useCategories,
   useCreateItem,
@@ -63,12 +64,20 @@ export function ItemsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Inventory</h1>
-        <p className="text-sm text-muted-foreground">
-          Stock items by weight — gross, stone and net grams, purity, HUID
-          hallmark and making charges.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Inventory</h1>
+          <p className="text-sm text-muted-foreground">
+            Stock items by weight — gross, stone and net grams, purity, HUID
+            hallmark and making charges.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => void saveReport('/reports/inventory.xlsx', 'inventory.xlsx')}
+        >
+          <Download className="size-4" /> Excel
+        </Button>
       </div>
 
       {noCategories && (

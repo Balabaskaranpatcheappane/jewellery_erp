@@ -6,6 +6,7 @@ import { RateMasterModule } from './rate-master/rate-master.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { CustomersModule } from './customers/customers.module';
 import { BillingModule } from './billing/billing.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { BillingModule } from './billing/billing.module';
     InventoryModule,
     CustomersModule,
     BillingModule,
+    ReportsModule,
   ],
 })
 export class AppModule {}

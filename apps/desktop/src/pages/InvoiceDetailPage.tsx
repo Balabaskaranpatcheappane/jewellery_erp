@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { inr, grams } from '@/lib/format';
+import { openReport } from '@/lib/download';
 import { useInvoice } from '@/features/billing/api';
 
 export function InvoiceDetailPage() {
@@ -32,7 +33,16 @@ export function InvoiceDetailPage() {
         <Button variant="ghost" onClick={() => navigate('/billing')}>
           <ArrowLeft className="size-4" /> Invoices
         </Button>
-        <span className="text-sm text-muted-foreground">{inv.status}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">{inv.status}</span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void openReport(`/reports/invoices/${inv.id}/pdf`)}
+          >
+            <Printer className="size-4" /> PDF / Print
+          </Button>
+        </div>
       </div>
 
       <div>

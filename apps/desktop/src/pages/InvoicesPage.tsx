@@ -1,8 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { inr } from '@/lib/format';
+import { saveReport } from '@/lib/download';
 import { useInvoices } from '@/features/billing/api';
 
 const statusStyles: Record<string, string> = {
@@ -23,9 +24,17 @@ export function InvoicesPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Invoices</h1>
           <p className="text-sm text-muted-foreground">Sales bills and tax invoices.</p>
         </div>
-        <Button onClick={() => navigate('/billing/new')}>
-          <Plus className="size-4" /> New Invoice
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => void saveReport('/reports/invoices.xlsx', 'invoices.xlsx')}
+          >
+            <Download className="size-4" /> Excel
+          </Button>
+          <Button onClick={() => navigate('/billing/new')}>
+            <Plus className="size-4" /> New Invoice
+          </Button>
+        </div>
       </div>
 
       <Card>
