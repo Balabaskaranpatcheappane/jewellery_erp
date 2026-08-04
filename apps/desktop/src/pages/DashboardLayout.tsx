@@ -6,6 +6,7 @@ import {
   LogOut,
   Package,
   Tags,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ const nav = [
   { to: '/rate-master', label: 'Rate Master', icon: LineChart, end: false },
   { to: '/inventory', label: 'Inventory', icon: Package, end: true },
   { to: '/inventory/categories', label: 'Categories', icon: Tags, end: false },
+  { to: '/customers', label: 'Customers', icon: Users, end: false },
 ];
 
 export function DashboardLayout() {

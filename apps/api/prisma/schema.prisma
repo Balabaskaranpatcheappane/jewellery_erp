@@ -68,6 +68,23 @@ model MetalRate {
   @@map("metal_rates")
 }
 
+/// A retail customer. Phone is the natural unique key for walk-in jewelry
+/// shops; GSTIN is optional (only for B2B / tax invoices).
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String   @unique
+  email     String?
+  gstin     String?
+  address   String?
+  city      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@map("customers")
+}
+
 /// Product grouping (Rings, Chains, Bangles, …) carrying GST HSN code and
 /// default making-charge / wastage settings that new items inherit.
 model ProductCategory {

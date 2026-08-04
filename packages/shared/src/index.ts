@@ -30,3 +30,6 @@ export type {
   CreateItemInput,
   Item,
 } from './inventory';
+
+export { createCustomerSchema, customerSchema } from './customer';
+export type { CreateCustomerInput, Customer } from './customer';
