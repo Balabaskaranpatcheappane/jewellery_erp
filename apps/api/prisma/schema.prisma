@@ -55,6 +55,12 @@ enum SchemeStatus {
   CANCELLED
 }
 
+enum LoanStatus {
+  ACTIVE
+  CLOSED
+  DEFAULTED
+}
+
 model User {
   id           String       @id @default(cuid())
   email        String       @unique
@@ -66,6 +72,7 @@ model User {
   updatedAt    DateTime     @updatedAt
   metalRates   MetalRate[]
   invoices     Invoice[]
+  loans        Loan[]
 
   @@map("users")
 }
@@ -102,6 +109,7 @@ model Customer {
   updatedAt DateTime @updatedAt
   invoices  Invoice[]
   schemes   SavingScheme[]
+  loans     Loan[]
 
   @@index([name])
   @@map("customers")
@@ -290,6 +298,57 @@ model SchemeInstallment {
 
   @@index([schemeId])
   @@map("scheme_installments")
+}
+
+/// A loan against pledged jewelry (gold loan). Interest accrues monthly on the
+/// principal; repayments are recorded and the outstanding is computed.
+model Loan {
+  id                  String          @id @default(cuid())
+  loanNo              String          @unique
+  customer            Customer        @relation(fields: [customerId], references: [id])
+  customerId          String
+  principal           Decimal         @db.Decimal(14, 2)
+  interestRatePercent Decimal         @db.Decimal(6, 3)
+  startDate           DateTime        @db.Date
+  dueDate             DateTime?       @db.Date
+  status              LoanStatus      @default(ACTIVE)
+  notes               String?
+  createdBy           User?           @relation(fields: [createdById], references: [id])
+  createdById         String?
+  createdAt           DateTime        @default(now())
+  items               PledgeItem[]
+  repayments          LoanRepayment[]
+
+  @@index([customerId])
+  @@index([status])
+  @@map("loans")
+}
+
+model PledgeItem {
+  id              String    @id @default(cuid())
+  loan            Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  loanId          String
+  description     String
+  metal           MetalType
+  purity          String
+  grossWeightGram Decimal   @db.Decimal(12, 3)
+  netWeightGram   Decimal   @db.Decimal(12, 3)
+  estimatedValue  Decimal   @db.Decimal(14, 2)
+
+  @@index([loanId])
+  @@map("pledge_items")
+}
+
+model LoanRepayment {
+  id     String   @id @default(cuid())
+  loan   Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  loanId String
+  amount Decimal  @db.Decimal(14, 2)
+  paidOn DateTime @db.Date
+  note   String?
+
+  @@index([loanId])
+  @@map("loan_repayments")
 }
 
 /// Singleton shop profile (name, address, GSTIN) printed on invoices.

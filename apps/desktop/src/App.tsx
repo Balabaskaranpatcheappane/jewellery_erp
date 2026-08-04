@@ -22,6 +22,8 @@ import { SchemesPage } from '@/pages/SchemesPage';
 import { BranchesPage } from '@/pages/BranchesPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { UsersPage } from '@/pages/UsersPage';
+import { LoansPage } from '@/pages/LoansPage';
+import { LoanDetailPage } from '@/pages/LoanDetailPage';
 
 function RequireAuth() {
   const token = useAuthStore((s) => s.token);
@@ -46,6 +48,8 @@ const router = createHashRouter([
           { path: '/billing/invoices/:id', element: <InvoiceDetailPage /> },
           { path: '/job-work', element: <JobWorkPage /> },
           { path: '/schemes', element: <SchemesPage /> },
+          { path: '/loans', element: <LoansPage /> },
+          { path: '/loans/:id', element: <LoanDetailPage /> },
           { path: '/branches', element: <BranchesPage /> },
           { path: '/settings', element: <SettingsPage /> },
           { path: '/users', element: <UsersPage /> },

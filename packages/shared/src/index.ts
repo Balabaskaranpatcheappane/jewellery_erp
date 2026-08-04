@@ -97,3 +97,26 @@ export type { CreateUserInput, SetUserActiveInput, UserRecord } from './user';
 
 export { updateShopProfileSchema, shopProfileSchema } from './shop';
 export type { UpdateShopProfileInput, ShopProfile } from './shop';
+
+export {
+  LoanStatus,
+  pledgeItemInputSchema,
+  createLoanSchema,
+  addRepaymentSchema,
+  pledgeItemSchema,
+  loanRepaymentSchema,
+  loanSchema,
+  loanSummarySchema,
+  monthsElapsed,
+  computeLoan,
+} from './loan';
+export type {
+  PledgeItemInput,
+  CreateLoanInput,
+  AddRepaymentInput,
+  LoanComputation,
+  PledgeItem,
+  LoanRepayment,
+  Loan,
+  LoanSummary,
+} from './loan';

@@ -13,6 +13,7 @@ import {
   Building2,
   Settings,
   UserCog,
+  Landmark,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -36,6 +37,7 @@ const nav: NavItem[] = [
   { to: '/billing', label: 'Billing', icon: Receipt, end: false },
   { to: '/job-work', label: 'Job Work', icon: Hammer, end: false },
   { to: '/schemes', label: 'Schemes', icon: PiggyBank, end: false },
+  { to: '/loans', label: 'Gold Loans', icon: Landmark, end: false },
   { to: '/branches', label: 'Branches', icon: Building2, end: false },
   { to: '/users', label: 'Users', icon: UserCog, end: false, adminOnly: true },
   { to: '/settings', label: 'Settings', icon: Settings, end: false },
