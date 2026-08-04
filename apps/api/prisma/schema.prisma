@@ -36,6 +36,13 @@ enum ItemStatus {
   SOLD
 }
 
+enum InvoiceStatus {
+  DRAFT
+  FINALIZED
+  PAID
+  CANCELLED
+}
+
 model User {
   id           String       @id @default(cuid())
   email        String       @unique
@@ -46,6 +53,7 @@ model User {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   metalRates   MetalRate[]
+  invoices     Invoice[]
 
   @@map("users")
 }
@@ -80,6 +88,7 @@ model Customer {
   city      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  invoices  Invoice[]
 
   @@index([name])
   @@map("customers")
@@ -123,9 +132,81 @@ model Item {
   status          ItemStatus       @default(IN_STOCK)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  invoiceLines    InvoiceLine[]
 
   @@index([categoryId])
   @@index([status])
   @@index([metal, purity])
   @@map("items")
+}
+
+/// A sale invoice. Totals are computed server-side from the shared billing
+/// engine and persisted so the invoice is a faithful historical record even if
+/// rates or making charges change later.
+model Invoice {
+  id           String        @id @default(cuid())
+  invoiceNo    String        @unique
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  customerId   String
+  invoiceDate  DateTime      @db.Date
+  status       InvoiceStatus @default(FINALIZED)
+  subtotal     Decimal       @db.Decimal(14, 2)
+  cgstPercent  Decimal       @db.Decimal(6, 3)
+  sgstPercent  Decimal       @db.Decimal(6, 3)
+  cgst         Decimal       @db.Decimal(14, 2)
+  sgst         Decimal       @db.Decimal(14, 2)
+  oldGoldValue Decimal       @default(0) @db.Decimal(14, 2)
+  roundOff     Decimal       @default(0) @db.Decimal(8, 2)
+  grandTotal   Decimal       @db.Decimal(14, 2)
+  notes        String?
+  createdBy    User?         @relation(fields: [createdById], references: [id])
+  createdById  String?
+  createdAt    DateTime      @default(now())
+  lines        InvoiceLine[]
+  oldGoldLines OldGoldLine[]
+
+  @@index([customerId])
+  @@index([invoiceDate])
+  @@map("invoices")
+}
+
+model InvoiceLine {
+  id             String           @id @default(cuid())
+  invoice        Invoice          @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId      String
+  item           Item?            @relation(fields: [itemId], references: [id])
+  itemId         String?
+  description    String
+  metal          MetalType
+  purity         String
+  netWeightGram  Decimal          @db.Decimal(12, 3)
+  ratePerGram    Decimal          @db.Decimal(12, 3)
+  makingType     MakingChargeType
+  makingRate     Decimal          @db.Decimal(12, 3)
+  wastagePercent Decimal          @db.Decimal(6, 3)
+  quantity       Int              @default(1)
+  metalValue     Decimal          @db.Decimal(14, 2)
+  makingAmount   Decimal          @db.Decimal(14, 2)
+  wastageAmount  Decimal          @db.Decimal(14, 2)
+  lineTotal      Decimal          @db.Decimal(14, 2)
+
+  @@index([invoiceId])
+  @@map("invoice_lines")
+}
+
+/// Old-gold / exchange taken against a sale; its value is deducted from the
+/// invoice grand total.
+model OldGoldLine {
+  id               String    @id @default(cuid())
+  invoice          Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId        String
+  description      String
+  metal            MetalType
+  grossWeightGram  Decimal   @db.Decimal(12, 3)
+  deductionPercent Decimal   @db.Decimal(6, 3)
+  ratePerGram      Decimal   @db.Decimal(12, 3)
+  value            Decimal   @db.Decimal(14, 2)
+
+  @@index([invoiceId])
+  @@map("old_gold_lines")
 }

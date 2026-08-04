@@ -7,6 +7,7 @@ import {
   Package,
   Tags,
   Users,
+  Receipt,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ const nav = [
   { to: '/inventory', label: 'Inventory', icon: Package, end: true },
   { to: '/inventory/categories', label: 'Categories', icon: Tags, end: false },
   { to: '/customers', label: 'Customers', icon: Users, end: false },
+  { to: '/billing', label: 'Billing', icon: Receipt, end: false },
 ];
 
 export function DashboardLayout() {
