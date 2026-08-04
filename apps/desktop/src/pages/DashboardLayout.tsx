@@ -14,6 +14,7 @@ import {
   Settings,
   UserCog,
   Landmark,
+  BarChart3,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,7 @@ const nav: NavItem[] = [
   { to: '/inventory/categories', label: 'Categories', icon: Tags, end: false },
   { to: '/customers', label: 'Customers', icon: Users, end: false },
   { to: '/billing', label: 'Billing', icon: Receipt, end: false },
+  { to: '/reports/sales', label: 'Sales Report', icon: BarChart3, end: false },
   { to: '/job-work', label: 'Job Work', icon: Hammer, end: false },
   { to: '/schemes', label: 'Schemes', icon: PiggyBank, end: false },
   { to: '/loans', label: 'Gold Loans', icon: Landmark, end: false },

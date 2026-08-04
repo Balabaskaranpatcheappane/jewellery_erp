@@ -98,6 +98,9 @@ export type { CreateUserInput, SetUserActiveInput, UserRecord } from './user';
 export { updateShopProfileSchema, shopProfileSchema } from './shop';
 export type { UpdateShopProfileInput, ShopProfile } from './shop';
 
+export { SalesPeriod, salesReportRowSchema, salesReportSchema } from './report';
+export type { SalesReportRow, SalesReport } from './report';
+
 export {
   LoanStatus,
   pledgeItemInputSchema,

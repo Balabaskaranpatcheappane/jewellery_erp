@@ -1,10 +1,24 @@
-import { Controller, Get, Param, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, Res, UseGuards } from '@nestjs/common';
 import type { Response } from 'express';
+import { SalesPeriod } from '@erp/shared';
+import type { SalesReport } from '@erp/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { BillingService } from '../billing/billing.service';
 import { ShopService } from '../shop/shop.service';
 import { ReportsService } from './reports.service';
 import { renderInvoicePdf } from './invoice-pdf';
+
+function normalizePeriod(p?: string): SalesPeriod {
+  return (Object.values(SalesPeriod) as string[]).includes(p ?? '')
+    ? (p as SalesPeriod)
+    : SalesPeriod.DAILY;
+}
+
+function parseDate(s?: string): Date | undefined {
+  if (!s) return undefined;
+  const d = new Date(`${s}T00:00:00.000Z`);
+  return Number.isNaN(d.getTime()) ? undefined : d;
+}
 
 @Controller('reports')
 @UseGuards(JwtAuthGuard)
@@ -30,6 +44,39 @@ export class ReportsController {
       'Content-Disposition': `inline; filename="${invoice.invoiceNo}.pdf"`,
     });
     res.send(pdf);
+  }
+
+  @Get('sales')
+  sales(
+    @Query('period') period?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ): Promise<SalesReport> {
+    return this.reports.salesReport(
+      normalizePeriod(period),
+      parseDate(from),
+      parseDate(to),
+    );
+  }
+
+  @Get('sales.xlsx')
+  async salesXlsx(
+    @Res() res: Response,
+    @Query('period') period?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ): Promise<void> {
+    const buf = await this.reports.salesReportXlsx(
+      normalizePeriod(period),
+      parseDate(from),
+      parseDate(to),
+    );
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="sales-report.xlsx"',
+    });
+    res.send(buf);
   }
 
   @Get('inventory.xlsx')
