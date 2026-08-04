@@ -4,11 +4,48 @@ import type { Invoice, ShopProfile } from '@erp/shared';
 const money = (n: number): string =>
   n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-// Page geometry (A4, 40pt margins → 515pt content width from x=40 to x=555).
+// A4 geometry with 40pt margins.
+const PAGE_W = 595.28;
 const LEFT = 40;
 const RIGHT = 555;
+const GOLD = '#C9A227';
+const INK = '#1a1a1a';
+const MUTED = '#666666';
+const LINE = '#dddddd';
 
-/** Renders an invoice to a PDF buffer with aligned columns. */
+/* ---------------------------- amount in words --------------------------- */
+const ONES = [
+  '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+  'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+  'Seventeen', 'Eighteen', 'Nineteen',
+];
+const TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+function twoDigit(n: number): string {
+  if (n < 20) return ONES[n];
+  return `${TENS[Math.floor(n / 10)]}${n % 10 ? ' ' + ONES[n % 10] : ''}`;
+}
+function threeDigit(n: number): string {
+  const h = Math.floor(n / 100);
+  const rest = n % 100;
+  return `${h ? ONES[h] + ' Hundred' + (rest ? ' ' : '') : ''}${rest ? twoDigit(rest) : ''}`;
+}
+function amountInWords(amount: number): string {
+  const rupees = Math.floor(amount);
+  if (rupees === 0) return 'Zero Rupees Only';
+  const crore = Math.floor(rupees / 10000000);
+  const lakh = Math.floor((rupees % 10000000) / 100000);
+  const thousand = Math.floor((rupees % 100000) / 1000);
+  const hundred = rupees % 1000;
+  const parts: string[] = [];
+  if (crore) parts.push(`${twoDigit(crore)} Crore`);
+  if (lakh) parts.push(`${twoDigit(lakh)} Lakh`);
+  if (thousand) parts.push(`${twoDigit(thousand)} Thousand`);
+  if (hundred) parts.push(threeDigit(hundred));
+  return `${parts.join(' ')} Rupees Only`;
+}
+
+/** Renders an invoice to a nicely designed PDF buffer. */
 export function renderInvoicePdf(
   invoice: Invoice,
   shop: ShopProfile,
@@ -20,119 +57,130 @@ export function renderInvoicePdf(
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const text = (
+    const put = (
       s: string,
       x: number,
       y: number,
       w: number,
       align: 'left' | 'right' | 'center' = 'left',
-      opts: { size?: number; color?: string; bold?: boolean } = {},
-    ) => {
+      o: { size?: number; color?: string; bold?: boolean } = {},
+    ) =>
       doc
-        .font(opts.bold ? 'Helvetica-Bold' : 'Helvetica')
-        .fontSize(opts.size ?? 9)
-        .fillColor(opts.color ?? '#111111')
+        .font(o.bold ? 'Helvetica-Bold' : 'Helvetica')
+        .fontSize(o.size ?? 9)
+        .fillColor(o.color ?? INK)
         .text(s, x, y, { width: w, align, lineBreak: false });
-    };
 
-    // ---------- Header ----------
-    text(shop.name, LEFT, 40, 300, 'left', { size: 20, bold: true });
-    let hy = 64;
-    const shopLines = [shop.address, shop.phone && `Ph: ${shop.phone}`, shop.gstin && `GSTIN: ${shop.gstin}`]
-      .filter(Boolean) as string[];
-    for (const line of shopLines) {
-      text(line, LEFT, hy, 300, 'left', { size: 9, color: '#555555' });
+    // Top gold accent bar
+    doc.rect(0, 0, PAGE_W, 6).fill(GOLD);
+
+    // Header — shop (left) + invoice meta (right)
+    put(shop.name, LEFT, 34, 320, 'left', { size: 22, bold: true });
+    let hy = 62;
+    for (const l of [shop.address, shop.phone && `Ph: ${shop.phone}`, shop.gstin && `GSTIN: ${shop.gstin}`].filter(
+      Boolean,
+    ) as string[]) {
+      put(l, LEFT, hy, 320, 'left', { size: 9, color: MUTED });
       hy += 13;
     }
+    put('TAX INVOICE', RIGHT - 220, 34, 220, 'right', { size: 15, bold: true, color: GOLD });
+    put(invoice.invoiceNo, RIGHT - 220, 56, 220, 'right', { size: 11, bold: true });
+    put(`Date: ${invoice.invoiceDate}`, RIGHT - 220, 72, 220, 'right', { size: 9, color: MUTED });
 
-    text('TAX INVOICE', RIGHT - 200, 40, 200, 'right', { size: 14, bold: true });
-    text(invoice.invoiceNo, RIGHT - 200, 60, 200, 'right', { size: 11, bold: true });
-    text(`Date: ${invoice.invoiceDate}`, RIGHT - 200, 76, 200, 'right', { size: 9, color: '#555555' });
+    let y = Math.max(hy, 96) + 6;
 
-    let y = Math.max(hy, 96) + 8;
-    doc.moveTo(LEFT, y).lineTo(RIGHT, y).lineWidth(1).strokeColor('#cccccc').stroke();
-    y += 10;
+    // Bill To band
+    doc.rect(LEFT, y, RIGHT - LEFT, 34).fill('#f7f6f2');
+    put('BILL TO', LEFT + 10, y + 6, 200, 'left', { size: 8, color: MUTED, bold: true });
+    put(invoice.customerName ?? '-', LEFT + 10, y + 17, 300, 'left', { size: 11, bold: true });
+    y += 48;
 
-    // ---------- Bill to ----------
-    text('Bill To', LEFT, y, 200, 'left', { size: 9, color: '#888888', bold: true });
-    text(invoice.customerName ?? '-', LEFT, y + 13, 300, 'left', { size: 11, bold: true });
-    y += 40;
-
-    // ---------- Line-item table ----------
-    // Column x-positions and widths (right edge 555).
+    // ---------- Items table ----------
     const col = {
-      desc: { x: LEFT, w: 150 },
-      metal: { x: 190, w: 60 },
-      net: { x: 250, w: 55 },
-      rate: { x: 305, w: 65 },
-      making: { x: 370, w: 60 },
-      wast: { x: 430, w: 55 },
-      total: { x: 485, w: 70 },
+      desc: { x: LEFT + 6, w: 150, align: 'left' as const },
+      metal: { x: 190, w: 58, align: 'left' as const },
+      net: { x: 248, w: 50, align: 'right' as const },
+      rate: { x: 300, w: 66, align: 'right' as const },
+      making: { x: 368, w: 58, align: 'right' as const },
+      wast: { x: 428, w: 52, align: 'right' as const },
+      total: { x: 482, w: 67, align: 'right' as const },
     };
-    const headerY = y;
-    doc.rect(LEFT, headerY - 2, RIGHT - LEFT, 18).fill('#f1f1f1');
-    text('Description', col.desc.x + 4, headerY + 2, col.desc.w, 'left', { color: '#444', bold: true });
-    text('Metal', col.metal.x, headerY + 2, col.metal.w, 'left', { color: '#444', bold: true });
-    text('Net g', col.net.x, headerY + 2, col.net.w, 'right', { color: '#444', bold: true });
-    text('Rate', col.rate.x, headerY + 2, col.rate.w, 'right', { color: '#444', bold: true });
-    text('Making', col.making.x, headerY + 2, col.making.w, 'right', { color: '#444', bold: true });
-    text('Wastage', col.wast.x, headerY + 2, col.wast.w, 'right', { color: '#444', bold: true });
-    text('Amount', col.total.x, headerY + 2, col.total.w - 4, 'right', { color: '#444', bold: true });
-    y = headerY + 20;
+    const heads: [keyof typeof col, string][] = [
+      ['desc', 'Description'], ['metal', 'Metal'], ['net', 'Net g'],
+      ['rate', 'Rate'], ['making', 'Making'], ['wast', 'Wastage'], ['total', 'Amount'],
+    ];
+    doc.rect(LEFT, y, RIGHT - LEFT, 20).fill(INK);
+    for (const [k, label] of heads) {
+      put(label, col[k].x, y + 6, col[k].w, col[k].align, { size: 8.5, bold: true, color: '#ffffff' });
+    }
+    y += 20;
 
-    for (const l of invoice.lines) {
-      if (y > 740) {
+    invoice.lines.forEach((l, i) => {
+      if (y > 720) {
         doc.addPage();
         y = 50;
       }
-      text(l.description, col.desc.x + 4, y, col.desc.w, 'left');
-      text(`${l.metal} ${l.purity}`, col.metal.x, y, col.metal.w, 'left', { size: 8, color: '#555' });
-      text(l.netWeightGram.toFixed(3), col.net.x, y, col.net.w, 'right');
-      text(money(l.ratePerGram), col.rate.x, y, col.rate.w, 'right');
-      text(money(l.makingAmount), col.making.x, y, col.making.w, 'right');
-      text(money(l.wastageAmount), col.wast.x, y, col.wast.w, 'right');
-      text(money(l.lineTotal), col.total.x, y, col.total.w - 4, 'right', { bold: true });
-      y += 16;
-      doc.moveTo(LEFT, y - 3).lineTo(RIGHT, y - 3).lineWidth(0.5).strokeColor('#eeeeee').stroke();
-    }
+      if (i % 2 === 1) doc.rect(LEFT, y, RIGHT - LEFT, 18).fill('#faf9f6');
+      put(l.description, col.desc.x, y + 5, col.desc.w, 'left');
+      put(`${l.metal} ${l.purity}`, col.metal.x, y + 5, col.metal.w, 'left', { size: 8, color: MUTED });
+      put(l.netWeightGram.toFixed(3), col.net.x, y + 5, col.net.w, 'right');
+      put(money(l.ratePerGram), col.rate.x, y + 5, col.rate.w, 'right');
+      put(money(l.makingAmount), col.making.x, y + 5, col.making.w, 'right');
+      put(money(l.wastageAmount), col.wast.x, y + 5, col.wast.w, 'right');
+      put(money(l.lineTotal), col.total.x, y + 5, col.total.w, 'right', { bold: true });
+      y += 18;
+    });
+    doc.moveTo(LEFT, y).lineTo(RIGHT, y).lineWidth(0.7).strokeColor(LINE).stroke();
 
-    // ---------- Old gold ----------
+    // Old gold
     if (invoice.oldGoldLines.length > 0) {
-      y += 6;
-      text('Old gold / exchange', LEFT, y, 300, 'left', { size: 9, color: '#888', bold: true });
-      y += 14;
+      y += 8;
+      put('Old gold / exchange', col.desc.x, y, 300, 'left', { size: 8.5, bold: true, color: MUTED });
+      y += 13;
       for (const g of invoice.oldGoldLines) {
-        text(`${g.description} (${g.metal}, ${g.grossWeightGram.toFixed(3)} g)`, col.desc.x + 4, y, 320, 'left', { color: '#555' });
-        text(`- ${money(g.value)}`, col.total.x, y, col.total.w - 4, 'right', { color: '#555' });
-        y += 15;
+        put(`${g.description} (${g.metal}, ${g.grossWeightGram.toFixed(3)} g)`, col.desc.x, y, 340, 'left', { color: MUTED });
+        put(`- ${money(g.value)}`, col.total.x, y, col.total.w, 'right', { color: MUTED });
+        y += 14;
       }
     }
 
-    // ---------- Totals block (right aligned) ----------
-    y += 10;
-    const labelX = 330;
-    const labelW = 120;
-    const valX = 455;
-    const valW = 100;
-    const totalRow = (label: string, value: string, bold = false) => {
-      text(label, labelX, y, labelW, 'right', { bold });
-      text(value, valX, y, valW, 'right', { bold });
-      y += 16;
+    // ---------- Totals ----------
+    y += 12;
+    const lX = 330, lW = 110, vX = 445, vW = 110;
+    const row = (label: string, value: string) => {
+      put(label, lX, y, lW, 'right', { size: 9.5 });
+      put(value, vX, y, vW, 'right', { size: 9.5 });
+      y += 15;
     };
-    totalRow('Subtotal', money(invoice.subtotal));
-    totalRow(`CGST (${invoice.cgstPercent}%)`, money(invoice.cgst));
-    totalRow(`SGST (${invoice.sgstPercent}%)`, money(invoice.sgst));
-    if (invoice.oldGoldValue > 0) totalRow('Old gold', `- ${money(invoice.oldGoldValue)}`);
-    if (invoice.roundOff !== 0) totalRow('Round off', money(invoice.roundOff));
-    doc.moveTo(labelX, y).lineTo(RIGHT, y).lineWidth(1).strokeColor('#999999').stroke();
-    y += 6;
-    text('Grand Total', labelX, y, labelW, 'right', { size: 10, bold: true });
-    text(`Rs. ${money(invoice.grandTotal)}`, valX, y, valW, 'right', { size: 10, bold: true });
-    y += 24;
+    row('Subtotal', money(invoice.subtotal));
+    row(`CGST (${invoice.cgstPercent}%)`, money(invoice.cgst));
+    row(`SGST (${invoice.sgstPercent}%)`, money(invoice.sgst));
+    if (invoice.oldGoldValue > 0) row('Old gold', `- ${money(invoice.oldGoldValue)}`);
+    if (invoice.roundOff !== 0) row('Round off', money(invoice.roundOff));
+
+    // Grand total band (single line, highlighted)
+    y += 2;
+    doc.rect(lX, y, RIGHT - lX, 24).fill(GOLD);
+    put('GRAND TOTAL', lX + 10, y + 7, 90, 'left', { size: 10, bold: true, color: '#ffffff' });
+    put(`Rs. ${money(invoice.grandTotal)}`, vX - 10, y + 7, vW + 5, 'right', { size: 11, bold: true, color: '#ffffff' });
+    y += 34;
+
+    // Amount in words
+    put('Amount in words:', LEFT, y, 100, 'left', { size: 8.5, color: MUTED, bold: true });
+    put(amountInWords(invoice.grandTotal), LEFT + 92, y, RIGHT - LEFT - 92, 'left', { size: 9 });
+    y += 22;
 
     if (invoice.notes) {
-      text(`Notes: ${invoice.notes}`, LEFT, y, RIGHT - LEFT, 'left', { size: 9, color: '#666' });
+      put(`Notes: ${invoice.notes}`, LEFT, y, RIGHT - LEFT, 'left', { size: 9, color: MUTED });
+      y += 16;
     }
+
+    // Footer
+    const fy = 800;
+    doc.moveTo(LEFT, fy).lineTo(RIGHT, fy).lineWidth(0.7).strokeColor(LINE).stroke();
+    put('Thank you for your business.', LEFT, fy + 6, 300, 'left', { size: 8.5, color: MUTED });
+    put(`For ${shop.name}`, RIGHT - 200, fy + 6, 200, 'right', { size: 8.5, color: MUTED });
+    put('Authorised Signatory', RIGHT - 200, fy + 30, 200, 'right', { size: 8.5, color: MUTED });
 
     doc.end();
   });
