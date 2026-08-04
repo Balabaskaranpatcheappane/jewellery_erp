@@ -1,0 +1,37 @@
+Step 1 — Save your private key
+Put your vendor private key in a file private.pem:
+
+-----BEGIN PRIVATE KEY-----
+MC4CAQAwBQYDK2VwBCIEIGwgWotrAQXAOa1B4Enaadl+5IqMB2pGncY6mWNHhzFO
+-----END PRIVATE KEY-----
+
+Step 2 — Save this as genkey.mjs
+import { createPrivateKey, sign } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
+const priv = createPrivateKey(readFileSync('private.pem'));
+
+const now = Math.floor(Date.now() / 1000);
+const payload = {
+  licensee: 'Shop Name',        // <- change
+  edition: 'PRO',               // <- change
+  iat: now,
+  exp: now + 365 * 86400,       // <- remove this line for a perpetual key
+};
+
+const bytes = Buffer.from(JSON.stringify(payload));      // sign these exact bytes
+const key = `${bytes.toString('base64url')}.${sign(null, bytes, priv).toString('base64url')}`;
+console.log(key);
+
+Step 3 — Run it
+node genkey.mjs
+
+It prints the product key. Paste that into the app's Activate screen.
+
+Key rules (so it verifies)
+Sign the exact payload bytes you encode. Compute JSON.stringify(payload) once into bytes, then both base64url-encode and sign bytes. If you stringify twice with different key order/spacing, the signature won't match.
+base64url, not standard base64 (Node's 'base64url' handles this — no +, /, or =).
+Ed25519 with algorithm = null in sign(null, ...) (that's how Node signs Ed25519).
+exp/iat are epoch seconds (not milliseconds) — that's why it's Date.now()/1000.
+Only your private key can make keys the app accepts; the app checks them with the matching public key baked into apps/api/src/license/license.service.ts.
+That's the whole thing — the scripts/license-keygen.mjs --sign I shipped does exactly this; genkey.mjs above is the stripped-down manual version so you can see every step. Want a tiny HTML/GUI key generator (paste name → click → get key) so you don't need the command line?
