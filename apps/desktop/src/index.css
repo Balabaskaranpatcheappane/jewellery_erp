@@ -53,4 +53,13 @@
     @apply bg-background text-foreground;
     font-feature-settings: 'rlig' 1, 'calt' 1;
   }
+  /* Native <select> dropdowns: force readable colors in both themes so the
+     option popup isn't light-on-light (or dark-on-dark). */
+  select {
+    @apply bg-background text-foreground;
+  }
+  select option {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
 }
