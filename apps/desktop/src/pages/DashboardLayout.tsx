@@ -12,12 +12,22 @@ import {
   PiggyBank,
   Building2,
   Settings,
+  UserCog,
+  type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
 
-const nav = [
+interface NavItem {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  end: boolean;
+  adminOnly?: boolean;
+}
+
+const nav: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/rate-master', label: 'Rate Master', icon: LineChart, end: false },
   { to: '/inventory', label: 'Inventory', icon: Package, end: true },
@@ -27,6 +37,7 @@ const nav = [
   { to: '/job-work', label: 'Job Work', icon: Hammer, end: false },
   { to: '/schemes', label: 'Schemes', icon: PiggyBank, end: false },
   { to: '/branches', label: 'Branches', icon: Building2, end: false },
+  { to: '/users', label: 'Users', icon: UserCog, end: false, adminOnly: true },
   { to: '/settings', label: 'Settings', icon: Settings, end: false },
 ];
 
@@ -48,7 +59,9 @@ export function DashboardLayout() {
           <span className="font-semibold">Jewelry ERP</span>
         </div>
         <nav className="flex-1 space-y-1 px-3">
-          {nav.map((item) => (
+          {nav
+            .filter((item) => !item.adminOnly || user?.role === 'ADMIN')
+            .map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
